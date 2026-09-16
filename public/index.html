@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Обзор продаж — аналитическая витрина</title>
+<meta name="description" content="Разбор публичных данных Superstore (розница США, 2014–2017): выручка растёт, маржа — нет. География, скидки, каналы, товары, клиенты — вся страница пересчитывается на лету из одной таблицы фактов.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='5' fill='%230e0f10'/%3E%3Crect x='7' y='17' width='5' height='10' fill='%232f6f5e'/%3E%3Crect x='14' y='10' width='5' height='17' fill='%23f0ebe0'/%3E%3Crect x='21' y='6' width='5' height='21' fill='%23a83a22'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400..900&family=Oranienbaum&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<!-- ?v= — иначе браузер годами кэширует app.css/app.js по умолчанным
+     заголовкам python -m http.server и после правок показывает старую версию
+     (см. историю: пользователь ловил зависший кэш дважды). Бампать при каждом
+     деплое. -->
+<link rel="stylesheet" href="app.css?v=3">
+</head>
+<body>
+
+<div class="grain" aria-hidden="true"></div>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="masthead__rail">
+      <span>Выпуск 01</span><span>Superstore · США</span><span>2014 — 2017</span>
+      <span class="masthead__rail-end">учебная витрина</span>
+    </div>
+    <h1 class="masthead__title">
+      <span class="ln" style="--i:0">Обзор</span>
+      <span class="ln ln--out" style="--i:1">продаж</span>
+    </h1>
+    <div class="masthead__foot">
+      <p class="standfirst ln" style="--i:2">
+        Выручка выросла на пятую часть. Прибыль — нет.
+        Разбираем, куда она делась, по регионам, скидкам и товарам.
+      </p>
+      <div class="dateline ln" style="--i:3" id="dateline">загрузка…</div>
+    </div>
+  </div>
+</header>
+
+<div class="ticker" id="ticker" aria-hidden="true"><div class="ticker__track" id="ticker-track"></div></div>
+
+<div class="controlbar" id="controlbar">
+  <div class="wrap controlbar__inner">
+    <div class="ctl">
+      <span class="ctl__label">Период</span>
+      <div class="seg" id="period-switch">
+        <button data-period="quarter">Квартал</button>
+        <button data-period="year" class="is-on">Год</button>
+      </div>
+    </div>
+    <div class="ctl">
+      <span class="ctl__label">Регион</span>
+      <div class="chips" id="region-chips"></div>
+    </div>
+    <div class="ctl ctl--right">
+      <a href="#block-overview">01</a><a href="#block-geo">02</a><a href="#block-discounts">03</a>
+      <a href="#block-channels">04</a><a href="#block-sku">05</a><a href="#block-customers">06</a>
+    </div>
+  </div>
+</div>
+
+<main id="main" hidden>
+
+  <!-- ══════════════════════════════ 01 ══════════════════════════════ -->
+  <section id="block-overview" class="block">
+    <div class="wrap">
+      <div class="block__head reveal">
+        <span class="ghost" aria-hidden="true">01</span>
+        <span class="block__num">Блок первый</span>
+        <h2>Общая<br>картина</h2>
+        <p class="block__q">Бизнес вырос — но стал ли он от этого прибыльнее?</p>
+      </div>
+
+      <div class="hero" id="hero"></div>
+
+      <div class="lead reveal" id="lead"></div>
+
+      <div class="signals reveal">
+        <div class="signals__head">
+          <h3>На что обратить внимание</h3>
+          <p class="note">порядок — по величине эффекта на прибыль</p>
+        </div>
+        <ol class="signals__list" id="signals"></ol>
+        <button class="linkbtn" id="signals-more" hidden></button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 02 ══════════════════════════════ -->
+  <section id="block-geo" class="block block--alt">
+    <div class="wrap">
+      <div class="block__head reveal">
+        <span class="ghost" aria-hidden="true">02</span>
+        <span class="block__num">Блок второй</span>
+        <h2>География</h2>
+        <p class="block__q">Где бизнес растёт, а где рост куплен скидкой?</p>
+      </div>
+
+      <div class="scope reveal" id="scope-geo"></div>
+
+      <div class="grid grid--split">
+        <figure class="panel panel--hero reveal">
+          <figcaption>
+            <h3>Выручка и маржа по регионам</h3>
+            <span class="legend"><i class="sw sw--rev"></i>Выручка<i class="sw sw--prof"></i>Маржа</span>
+          </figcaption>
+          <div class="chart" id="chart-region-bars"></div>
+          <p class="note">клик по региону пересчитывает весь разворот</p>
+        </figure>
+
+        <figure class="panel reveal">
+          <figcaption><h3>Доля в результате</h3></figcaption>
+          <div class="chart" id="chart-region-share"></div>
+          <p class="note">снэпшот периода: сопоставление регионов между собой, не динамика</p>
+        </figure>
+      </div>
+
+      <figure class="panel panel--bleed reveal">
+        <figcaption>
+          <h3>Помесячная динамика</h3>
+          <div class="seg seg--sm" id="metric-switch">
+            <button data-metric="sales" class="is-on">Выручка</button>
+            <button data-metric="profit">Маржа</button>
+          </div>
+        </figcaption>
+        <div class="chart chart--tall" id="chart-monthly"></div>
+        <p class="note" id="monthly-note"></p>
+      </figure>
+
+      <figure class="panel panel--bleed panel--dark reveal">
+        <figcaption>
+          <h3>Рост выручки против сдвига маржинальности</h3>
+          <span class="legend legend--light">год к году</span>
+        </figcaption>
+        <div class="chart" id="chart-quadrant"></div>
+        <p class="note note--light">правый нижний угол — рост, оплаченный маржой</p>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 03 ══════════════════════════════ -->
+  <section id="block-discounts" class="block">
+    <div class="wrap">
+      <div class="block__head reveal">
+        <span class="ghost" aria-hidden="true">03</span>
+        <span class="block__num">Блок третий</span>
+        <h2>Скидки</h2>
+        <p class="block__q">Где скидка перестаёт окупаться?</p>
+      </div>
+
+      <div class="grid grid--split">
+        <figure class="panel panel--hero reveal">
+          <figcaption>
+            <h3>Маржа по размеру скидки</h3>
+            <span class="legend"><i class="sw sw--rev"></i>Выручка<i class="sw sw--prof"></i>Маржа</span>
+          </figcaption>
+          <div class="chart" id="chart-disc-bars"></div>
+          <p class="note">клик по корзине фильтрует весь разворот</p>
+        </figure>
+
+        <figure class="panel reveal">
+          <figcaption><h3>Доля выручки по корзинам</h3></figcaption>
+          <div class="chart" id="chart-disc-share"></div>
+        </figure>
+      </div>
+
+      <p class="callout" id="disc-callout" hidden></p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 04 ══════════════════════════════ -->
+  <section id="block-channels" class="block block--alt">
+    <div class="wrap">
+      <div class="block__head reveal">
+        <span class="ghost" aria-hidden="true">04</span>
+        <span class="block__num">Блок четвёртый</span>
+        <h2>Каналы</h2>
+        <p class="block__q">Одинаково ли ведут себя розница, корпоративные клиенты и домашние офисы?</p>
+      </div>
+
+      <div class="grid grid--split">
+        <figure class="panel panel--hero reveal">
+          <figcaption>
+            <h3>Выручка и маржа по каналам</h3>
+            <span class="legend"><i class="sw sw--rev"></i>Выручка<i class="sw sw--prof"></i>Маржа</span>
+          </figcaption>
+          <div class="chart" id="chart-channel-bars"></div>
+          <p class="note">клик по каналу фильтрует весь разворот</p>
+        </figure>
+
+        <figure class="panel reveal">
+          <figcaption><h3>Доля в результате</h3></figcaption>
+          <div class="chart" id="chart-channel-share"></div>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 05 ══════════════════════════════ -->
+  <section id="block-sku" class="block">
+    <div class="wrap">
+      <div class="block__head reveal">
+        <span class="ghost" aria-hidden="true">05</span>
+        <span class="block__num">Блок пятый</span>
+        <h2>Товары</h2>
+        <p class="block__q">Категория → подкатегория → товар: где именно в ассортименте теряется маржа?</p>
+      </div>
+
+      <div class="ctl reveal" style="margin-bottom:22px">
+        <span class="ctl__label">Категория</span>
+        <div class="chips" id="sku-cats"></div>
+      </div>
+
+      <figure class="panel panel--bleed reveal">
+        <figcaption>
+          <h3 id="sku-sub-title">Все подкатегории</h3>
+          <button class="linkbtn" id="sku-back" hidden>← ко всем подкатегориям</button>
+        </figcaption>
+        <div class="chart" id="chart-sku"></div>
+        <p class="note" id="sku-note"></p>
+      </figure>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════ 06 ══════════════════════════════ -->
+  <section id="block-customers" class="block block--alt">
+    <div class="wrap">
+      <div class="block__head reveal">
+        <span class="ghost" aria-hidden="true">06</span>
+        <span class="block__num">Блок шестой</span>
+        <h2>Клиенты</h2>
+        <p class="block__q">На ком держится прибыль — и кто перестал покупать?</p>
+      </div>
+
+      <div class="hero reveal" id="customer-stats"></div>
+
+      <div class="grid grid--split">
+        <figure class="panel panel--hero reveal">
+          <figcaption><h3>Лучшие клиенты периода</h3></figcaption>
+          <ul class="custlist" id="customer-list"></ul>
+          <p class="note">клик по клиенту открывает историю покупок</p>
+        </figure>
+
+        <aside class="panel reveal detail-panel" id="customer-detail" hidden></aside>
+      </div>
+    </div>
+  </section>
+
+  <footer class="colophon">
+    <div class="wrap">
+      <p class="colophon__lead">Как это собрано</p>
+      <p>Источник — Sample Superstore, публичный датасет розничных продаж по США за 2014–2017.
+         Витрина собирается скриптом <code>build_data.py</code>: определение формата дат по самим
+         данным, протокол очистки, агрегация и сверка сумм с исходником. В браузер уезжает одна
+         таблица фактов; все цифры на этой странице — её свёртка, посчитанная на лету.</p>
+      <p id="colophon-checks"></p>
+    </div>
+  </footer>
+</main>
+
+<div class="loading" id="loading"><span>собираем витрину</span></div>
+<div class="tip" id="tip" hidden></div>
+
+<script src="app.js?v=3"></script>
+</body>
+</html>
